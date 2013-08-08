@@ -18,7 +18,7 @@ namespace WarmUp.Tests
             var handler = new FakeHttpMessageHandler(response);
             var client = new HttpClient();
 
-            var sut = new WarmUp(client);
+            var sut = new Warmer(client);
 
             var result = sut.StartMany(new[] {
                 "http://first",

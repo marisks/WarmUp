@@ -18,7 +18,7 @@ namespace WarmUp.Tests
             var handler = new FakeHttpMessageHandler(message);
             var client = new HttpClient(handler);
 
-            var sut = new WarmUp(client);
+            var sut = new Warmer(client);
 
             Assert.DoesNotThrow(() => sut.StartOne("http://someurl").Wait());
         }
@@ -30,7 +30,7 @@ namespace WarmUp.Tests
             var handler = new FakeHttpMessageHandler(message);
             var client = new HttpClient(handler);
 
-            var sut = new WarmUp(client);
+            var sut = new Warmer(client);
 
             Assert.Throws<AggregateException>(() => sut.StartOne("http://someurl").Wait());
         }
@@ -42,7 +42,7 @@ namespace WarmUp.Tests
             var handler = new FakeHttpMessageHandler(message, throwException: true);
             var client = new HttpClient(handler);
 
-            var sut = new WarmUp(client);
+            var sut = new Warmer(client);
 
             Assert.Throws<AggregateException>(() => sut.StartOne("http://someurl").Wait());
         }
