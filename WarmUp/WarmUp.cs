@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace WarmUp
@@ -34,7 +35,7 @@ namespace WarmUp
                     var task = client.GetAsync(requestUrl);
                     result = task.Result;
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Log("Warmup of {0} failed. Exception: {1}", requestUrl, ex.Message);
                     throw;
@@ -46,6 +47,19 @@ namespace WarmUp
                     throw new ApplicationException("Status 200 doesn't received");
                 }
             });
+        }
+
+        public Task[] StartMany(string[] requestUrls, TimeSpan? startDelay = null)
+        {
+            var delay = startDelay ?? new TimeSpan();
+
+            var tasks = new List<Task>();
+            foreach(var url in requestUrls) 
+            {
+                tasks.Add(StartOne(url));
+                Thread.Sleep(delay);
+            }
+            return tasks.ToArray();
         }
 
         private void Log(string message, params object[] args)
