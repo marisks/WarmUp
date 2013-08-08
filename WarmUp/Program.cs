@@ -19,7 +19,7 @@ namespace WarmUp
             var client = new HttpClient();
             client.Timeout = timeout;
 
-            var warmer = new Warmer(client);
+            var warmer = new Warmer(client, msg => Console.WriteLine(msg));
             return (int)warmer.Warmup(siteUrls, retries, startDelay);
         }
     }

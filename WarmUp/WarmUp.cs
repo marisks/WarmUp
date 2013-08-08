@@ -56,9 +56,12 @@ namespace WarmUp
                     var task = client.GetAsync(requestUrl);
                     result = task.Result;
                 }
-                catch (Exception ex)
+                catch (AggregateException agex)
                 {
-                    Log("Warmup of {0} failed. Exception: {1}", requestUrl, ex.Message);
+                    foreach(var ex in agex.InnerExceptions)
+                    {
+                        Log("Warmup of {0} failed. Exception: {1}", requestUrl, ex.Message);
+                    }
                     throw;
                 }
 
@@ -67,6 +70,8 @@ namespace WarmUp
                     Log("Warmup of {0} failed. Received status {1}", requestUrl, result.StatusCode);
                     throw new ApplicationException("Status 200 doesn't received");
                 }
+
+                Log("Warmup of {0} finished successfully.", requestUrl);
             });
         }
 
