@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
+using System.Reflection;
 
 namespace WarmUp
 {
@@ -11,16 +7,26 @@ namespace WarmUp
     {
         static int Main(string[] args)
         {
-            var siteUrls = args;
-            var timeout = new TimeSpan(0, 10, 0);
-            var startDelay = new TimeSpan(0, 0, 10);
-            var retries = 5;
+            RegisterAssemblyResolve();
 
-            var client = new HttpClient();
-            client.Timeout = timeout;
+            return Application.Start(args);
+        }
 
-            var warmer = new Warmer(client, msg => Console.WriteLine(msg));
-            return (int)warmer.Warmup(siteUrls, retries, startDelay);
+        private static void RegisterAssemblyResolve()
+        {
+            AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
+            {
+                var resourceName = "WarmUp." + new AssemblyName(args.Name).Name + ".dll";
+
+                using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
+                {
+                    var assemblyData = new Byte[stream.Length];
+
+                    stream.Read(assemblyData, 0, assemblyData.Length);
+
+                    return Assembly.Load(assemblyData);
+                }
+            };
         }
     }
 }

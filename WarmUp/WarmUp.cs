@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,8 +9,8 @@ namespace WarmUp
 {
     public class Warmer
     {
-        private Action<string> log = s => { };
-        private HttpClient client;
+        private readonly Action<string> log = s => { };
+        private readonly HttpClient client;
 
         public Warmer(HttpClient client)
         {
@@ -24,11 +23,12 @@ namespace WarmUp
             this.log = log;
         }
 
-        public WarmupStatus Warmup(string[] requestUrls, int retries = 1, TimeSpan? startDelay = null)
+        public WarmupStatus Warmup(IEnumerable<Uri> requestUris, int retries = 1, TimeSpan? startDelay = null)
         {
+            var uris = requestUris.ToList();
             for (int i = 0; i < retries; i++)
             {
-                var tasks = StartMany(requestUrls, startDelay);
+                var tasks = StartMany(uris, startDelay);
                 try
                 {
                     Task.WaitAll(tasks);
@@ -45,44 +45,44 @@ namespace WarmUp
             return WarmupStatus.Failure;
         }
 
-        public Task StartOne(string requestUrl)
+        public Task StartOne(Uri requestUri)
         {
             return Task.Factory.StartNew(() =>
             {
                 HttpResponseMessage result;
                 try
                 {
-                    Log("Warmup of {0} started", requestUrl);
-                    var task = client.GetAsync(requestUrl);
+                    Log("Warmup of {0} started", requestUri);
+                    var task = client.GetAsync(requestUri);
                     result = task.Result;
                 }
                 catch (AggregateException agex)
                 {
                     foreach(var ex in agex.InnerExceptions)
                     {
-                        Log("Warmup of {0} failed. Exception: {1}", requestUrl, ex.Message);
+                        Log("Warmup of {0} failed. Exception: {1}", requestUri, ex.Message);
                     }
                     throw;
                 }
 
                 if (result.StatusCode != System.Net.HttpStatusCode.OK)
                 {
-                    Log("Warmup of {0} failed. Received status {1}", requestUrl, result.StatusCode);
-                    throw new ApplicationException("Status 200 doesn't received");
+                    Log("Warmup of {0} failed. Received status {1}", requestUri, result.StatusCode);
+                    throw new ApplicationException(string.Format("Warmup of {0} failed. Received status {1}", requestUri, result.StatusCode));
                 }
 
-                Log("Warmup of {0} finished successfully.", requestUrl);
+                Log("Warmup of {0} finished successfully.", requestUri);
             });
         }
 
-        public Task[] StartMany(string[] requestUrls, TimeSpan? startDelay = null)
+        public Task[] StartMany(IEnumerable<Uri> requestUris, TimeSpan? startDelay = null)
         {
             var delay = startDelay ?? new TimeSpan();
 
             var tasks = new List<Task>();
-            foreach(var url in requestUrls) 
+            foreach(var uri in requestUris) 
             {
-                tasks.Add(StartOne(url));
+                tasks.Add(StartOne(uri));
                 Thread.Sleep(delay);
             }
             return tasks.ToArray();

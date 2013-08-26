@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 using Should;
 
@@ -16,14 +12,15 @@ namespace WarmUp.Tests
         {
             var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
             var handler = new FakeHttpMessageHandler(response);
-            var client = new HttpClient();
+            var client = new HttpClient(handler);
 
             var sut = new Warmer(client);
 
-            var result = sut.StartMany(new[] {
-                "http://first",
-                "http://second",
-                "http://third"
+            var result = sut.StartMany(new[]
+            {
+                new Uri("http://first"),
+                new Uri("http://second"),
+                new Uri("http://third")
             });
 
             result.Length.ShouldEqual(3);

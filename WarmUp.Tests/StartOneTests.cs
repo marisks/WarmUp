@@ -20,7 +20,7 @@ namespace WarmUp.Tests
 
             var sut = new Warmer(client);
 
-            Assert.DoesNotThrow(() => sut.StartOne("http://someurl").Wait());
+            Assert.DoesNotThrow(() => sut.StartOne(new Uri("http://someurl")).Wait());
         }
 
         [Fact]
@@ -32,7 +32,7 @@ namespace WarmUp.Tests
 
             var sut = new Warmer(client);
 
-            Assert.Throws<AggregateException>(() => sut.StartOne("http://someurl").Wait());
+            Assert.Throws<AggregateException>(() => sut.StartOne(new Uri("http://someurl")).Wait());
         }
 
         [Fact]
@@ -44,7 +44,7 @@ namespace WarmUp.Tests
 
             var sut = new Warmer(client);
 
-            Assert.Throws<AggregateException>(() => sut.StartOne("http://someurl").Wait());
+            Assert.Throws<AggregateException>(() => sut.StartOne(new Uri("http://someurl")).Wait());
         }
     }
 }
